@@ -1,0 +1,7 @@
+# Служебные файлы Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Промежуточные результаты Allure (в репозиторий попадает только отчёт)
+allure-results/
