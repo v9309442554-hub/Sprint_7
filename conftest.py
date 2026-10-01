@@ -3,7 +3,7 @@
 import pytest
 
 from helpers import (
-    delete_courier,
+    delete_courier_by_login_password,
     generate_random_string,
     register_new_courier_and_return_login_password,
 )
@@ -20,7 +20,7 @@ def courier_data():
 
     yield payload
 
-    delete_courier(payload["login"], payload["password"])
+    delete_courier_by_login_password(payload["login"], payload["password"])
 
 
 @pytest.fixture
@@ -30,4 +30,4 @@ def courier():
 
     yield {"login": login, "password": password, "firstName": first_name}
 
-    delete_courier(login, password)
+    delete_courier_by_login_password(login, password)

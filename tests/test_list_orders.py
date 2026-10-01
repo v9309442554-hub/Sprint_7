@@ -1,9 +1,8 @@
 """Тесты ручки «Список заказов»: GET /api/v1/orders."""
 
 import allure
-import requests
 
-from data import BASE_URL
+from helpers import get_orders
 
 
 @allure.feature("Заказ")
@@ -13,7 +12,7 @@ class TestListOrders:
 
     @allure.title("В ответе возвращается список заказов")
     def test_get_orders_returns_list(self):
-        response = requests.get(f"{BASE_URL}/orders")
+        response = get_orders()
 
         assert response.status_code == 200
         assert "orders" in response.json()

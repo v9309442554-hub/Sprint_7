@@ -1,8 +1,9 @@
-"""Простые вспомогательные функции для тестов."""
+"""Вспомогательные функции: генерация данных и шаги (запросы) для Allure."""
 
 import random
 import string
 
+import allure
 import requests
 
 from data import BASE_URL
@@ -12,6 +13,44 @@ def generate_random_string(length=10):
     """Возвращает случайную строку из букв нижнего регистра."""
     letters = string.ascii_lowercase
     return "".join(random.choice(letters) for i in range(length))
+
+
+@allure.step("Создать курьера: POST /courier")
+def create_courier(payload):
+    """Отправляет запрос на создание курьера."""
+    return requests.post(f"{BASE_URL}/courier", data=payload)
+
+
+@allure.step("Авторизовать курьера: POST /courier/login")
+def login_courier(payload):
+    """Отправляет запрос на авторизацию курьера."""
+    return requests.post(f"{BASE_URL}/courier/login", data=payload)
+
+
+@allure.step("Удалить курьера: DELETE /courier/{courier_id}")
+def delete_courier(courier_id):
+    """Удаляет курьера по его id."""
+    return requests.delete(f"{BASE_URL}/courier/{courier_id}")
+
+
+@allure.step("Удалить курьера по логину и паролю")
+def delete_courier_by_login_password(login, password):
+    """Удаляет курьера: сначала получает id, затем удаляет."""
+    response = login_courier({"login": login, "password": password})
+    if response.status_code == 200:
+        delete_courier(response.json()["id"])
+
+
+@allure.step("Создать заказ: POST /orders")
+def create_order(order):
+    """Отправляет запрос на создание заказа."""
+    return requests.post(f"{BASE_URL}/orders", json=order)
+
+
+@allure.step("Получить список заказов: GET /orders")
+def get_orders():
+    """Запрашивает список заказов."""
+    return requests.get(f"{BASE_URL}/orders")
 
 
 def register_new_courier_and_return_login_password():
@@ -29,22 +68,8 @@ def register_new_courier_and_return_login_password():
         "firstName": first_name,
     }
 
-    response = requests.post(f"{BASE_URL}/courier", data=payload)
+    response = create_courier(payload)
 
-    login_pass = []
     if response.status_code == 201:
-        login_pass.append(login)
-        login_pass.append(password)
-        login_pass.append(first_name)
-
-    return login_pass
-
-
-def delete_courier(login, password):
-    """Удаляет курьера по логину и паролю, чтобы не оставлять данные."""
-    response = requests.post(
-        f"{BASE_URL}/courier/login", data={"login": login, "password": password}
-    )
-    if response.status_code == 200:
-        courier_id = response.json()["id"]
-        requests.delete(f"{BASE_URL}/courier/{courier_id}")
+        return [login, password, first_name]
+    return []

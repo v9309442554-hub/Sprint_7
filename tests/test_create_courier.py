@@ -2,10 +2,9 @@
 
 import allure
 import pytest
-import requests
 
-from data import BASE_URL, COURIER_ALREADY_EXISTS, NOT_ENOUGH_DATA_CREATE
-from helpers import generate_random_string
+from data import COURIER_ALREADY_EXISTS, NOT_ENOUGH_DATA_CREATE
+from helpers import create_courier, generate_random_string
 
 
 @allure.feature("Курьер")
@@ -15,15 +14,15 @@ class TestCreateCourier:
 
     @allure.title("Курьера можно создать")
     def test_create_courier_success(self, courier_data):
-        response = requests.post(f"{BASE_URL}/courier", data=courier_data)
+        response = create_courier(courier_data)
 
         assert response.status_code == 201
         assert response.json() == {"ok": True}
 
     @allure.title("Нельзя создать двух одинаковых курьеров")
     def test_create_two_identical_couriers_error(self, courier_data):
-        requests.post(f"{BASE_URL}/courier", data=courier_data)
-        response = requests.post(f"{BASE_URL}/courier", data=courier_data)
+        create_courier(courier_data)
+        response = create_courier(courier_data)
 
         assert response.status_code == 409
         assert response.json()["message"] == COURIER_ALREADY_EXISTS
@@ -36,7 +35,7 @@ class TestCreateCourier:
             "firstName": generate_random_string(),
         }
 
-        response = requests.post(f"{BASE_URL}/courier", data=payload)
+        response = create_courier(payload)
 
         assert response.status_code == 409
         assert response.json()["message"] == COURIER_ALREADY_EXISTS
@@ -51,14 +50,14 @@ class TestCreateCourier:
         }
         payload.pop(field)
 
-        response = requests.post(f"{BASE_URL}/courier", data=payload)
+        response = create_courier(payload)
 
         assert response.status_code == 400
         assert response.json()["message"] == NOT_ENOUGH_DATA_CREATE
 
     @allure.title("Ошибка при создании курьера без данных")
     def test_create_courier_without_fields_error(self):
-        response = requests.post(f"{BASE_URL}/courier", data={})
+        response = create_courier({})
 
         assert response.status_code == 400
         assert response.json()["message"] == NOT_ENOUGH_DATA_CREATE

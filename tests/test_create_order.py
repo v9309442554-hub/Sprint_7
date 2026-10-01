@@ -2,9 +2,9 @@
 
 import allure
 import pytest
-import requests
 
-from data import BASE_URL, ORDER, ORDER_COLORS
+from data import ORDER, ORDER_COLORS
+from helpers import create_order
 
 
 @allure.feature("Заказ")
@@ -20,14 +20,14 @@ class TestCreateOrder:
         order = dict(ORDER)
         order["color"] = color
 
-        response = requests.post(f"{BASE_URL}/orders", json=order)
+        response = create_order(order)
 
         assert response.status_code == 201
         assert "track" in response.json()
 
     @allure.title("Заказ можно создать без поля color")
     def test_create_order_without_color(self):
-        response = requests.post(f"{BASE_URL}/orders", json=ORDER)
+        response = create_order(ORDER)
 
         assert response.status_code == 201
         assert "track" in response.json()
